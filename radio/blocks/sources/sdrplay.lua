@@ -652,11 +652,18 @@ function SDRplaySource:initialize_sdrplay()
 
     -- Configure device parameters
     device_params[0].devParams.fsFreq.fsHz = self.rate
+    device_params[0].devParams.rspDxParams.antennaSel = ffi.C.sdrplay_api_RspDx_ANTENNA_B
+    device_params[0].devParams.rspDxParams.biasTEnable = 1
+    device_params[0].devParams.rspDxParams.rfNotchEnable = 1
+    device_params[0].devParams.rspDxParams.rfDabNotchEnable = 1
     device_params[0].rxChannelA.tunerParams.bwType = libsdrplay_compute_bandwidth_closest(self.rate)
     device_params[0].rxChannelA.tunerParams.ifType = ffi.C.sdrplay_api_IF_Zero
     device_params[0].rxChannelA.tunerParams.loMode = ffi.C.sdrplay_api_LO_Auto
     device_params[0].rxChannelA.tunerParams.gain.gRdB = self.gain_reduction
-    device_params[0].rxChannelA.tunerParams.gain.minGr = ffi.C.sdrplay_api_NORMAL_MIN_GR
+    device_params[0].rxChannelA.tunerParams.gain.minGr = ffi.C.sdrplay_api_EXTENDED_MIN_GR
+    --device_params[0].rxChannelA.tunerParams.gain.minGr = ffi.C.sdrplay_api_NORMAL_MIN_GR
+    --device_params[0].rxChannelA.tunerParams.gain.minGr = ffi.C.sdrplay_api_NORMAL_MIN_GR
+
     device_params[0].rxChannelA.tunerParams.rfFreq.rfHz = self.frequency
 end
 
