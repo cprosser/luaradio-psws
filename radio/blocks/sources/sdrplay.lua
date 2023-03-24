@@ -661,6 +661,14 @@ function SDRplaySource:initialize_sdrplay()
     device_params[0].rxChannelA.tunerParams.loMode = ffi.C.sdrplay_api_LO_Auto
     device_params[0].rxChannelA.tunerParams.gain.gRdB = self.gain_reduction
     device_params[0].rxChannelA.tunerParams.gain.minGr = ffi.C.sdrplay_api_EXTENDED_MIN_GR
+    --work here
+
+    device_params[0].rxChannelA.ctrlParams.agc.enable = ffi.C.sdrplay_api_AGC_50HZ
+    device_params[0].rxChannelA.ctrlParams.agc.attack_ms = 500
+    device_params[0].rxChannelA.ctrlParams.agc.decay_ms = 500
+    device_params[0].rxChannelA.ctrlParams.agc.decay_delay_ms = 200
+    device_params[0].rxChannelA.ctrlParams.agc.decay_threshold_dB = 5
+       
     --device_params[0].rxChannelA.tunerParams.gain.minGr = ffi.C.sdrplay_api_NORMAL_MIN_GR
     --device_params[0].rxChannelA.tunerParams.gain.minGr = ffi.C.sdrplay_api_NORMAL_MIN_GR
 
