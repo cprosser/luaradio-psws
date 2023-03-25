@@ -1,34 +1,50 @@
 local radio = require('radio')
 
-if #arg < 2 then
-    io.stderr:write("Usage: " .. arg[0] .. " <frequency> <sideband>\n")
-    os.exit(1)
-end
 
-assert(arg[2] == "usb" or arg[2] == "lsb", "Sideband should be 'lsb' or 'usb'.")
 
-local frequency = tonumber(arg[1])
-local sideband = arg[2]
+-- WWV10 offset by 1000Hz so we pick up the carrier as a 1kHz tone
+local frequency = 10e6 - 1000
+-- treat it as usb since we tuned below
+local sideband = 'usb'
+-- with a NO IF sdr there is a spike right at the center frequency
+-- move a smidge away to avoid that (though not really a problem
+-- with what we are doing here)
 local tune_offset = -100e3
-local bandwidth = 3e3
-local gain = 15
--- demo code used 50
--- we reduced bandwidth and went with more samples
+-- only a 2kHz bandwidth. The 128 tap filter below is pretty soft
+-- otherwise we could tighten this up
+local bandwidth = 2e3
+
+-- determined empirically based on signal conditions and my
+-- active loop using the 5v bias T in the RSPdx
+local gain = 30
+
+-- sample rate is 2MHz, the lowest without on device decimation
+-- testing with SDRUno on windows always showed an increase in the frequency
+-- measurement if FlDigi (about +1 Hz) when hardware decimation was used
+-- instead rely on the decimation below in the TunerBlock
+local rsp_dx_sample_rate = 2e6
 local decimate = 10
--- Blocks
---local source = radio.RtlSdrSource(frequency + tune_offset, 1102500)
--- -- Source samples from 144.390 MHz sampled at 4 MHz, with 0.6 MHz bandwidth
--- using debug mode this ends up matching 300kHz bandwidth, which is just fine for what
--- we need
-local source = radio.SDRplaySource(frequency + tune_offset, 2e6, {bandwidth = 0.6e6, gain_reduction = 0})
+
+-- NOTE: Most of the device setup is hardcoded in sdrplay.lua
+--  like turning on the bias-T; the notch filters and IF AGC
+-- search for "-- Configure device parameters"
+local source = radio.SDRplaySource(frequency + tune_offset, 
+                                        rsp_dx_sample_rate, 
+                                        {
+                                            gain_reduction = 0
+                                        }
+                                    )
 
 local tuner = radio.TunerBlock(tune_offset, 2*bandwidth, decimate)
 local sb_filter = radio.ComplexBandpassFilterBlock(129, (sideband == "lsb") and {0, -bandwidth}
                                                                              or {0, bandwidth})
 local am_demod = radio.ComplexToRealBlock()
 local af_filter = radio.LowpassFilterBlock(128, bandwidth)
+-- use fixed gain and let FlDigi do it's own thing
 local af_gain = radio.MultiplyConstantBlock(gain)
 --local af_gain = radio.AGCBlock('slow')
+
+-- useful debugging tools
 --local sink = os.getenv('DISPLAY') and radio.PulseAudioSink(1) or radio.WAVFileSink('ssb.wav', 1)
 local sink = radio.PulseAudioSink(1) 
 
