@@ -663,11 +663,19 @@ function SDRplaySource:initialize_sdrplay()
     device_params[0].rxChannelA.tunerParams.gain.minGr = ffi.C.sdrplay_api_EXTENDED_MIN_GR
 
     -- match the defaults from SDRUno
-    device_params[0].rxChannelA.ctrlParams.agc.enable = ffi.C.sdrplay_api_AGC_50HZ
-    device_params[0].rxChannelA.ctrlParams.agc.attack_ms = 500
-    device_params[0].rxChannelA.ctrlParams.agc.decay_ms = 500
-    device_params[0].rxChannelA.ctrlParams.agc.decay_delay_ms = 200
-    device_params[0].rxChannelA.ctrlParams.agc.decay_threshold_dB = 5
+    -- actually don't turn on AGC, that throws off the signal measurment part
+    -- of the data as it's not polling the AGC value and correcting for it
+    -- end up with a flat audio value with AGC on
+    --device_params[0].rxChannelA.ctrlParams.agc.enable = ffi.C.sdrplay_api_AGC_50HZ
+    --device_params[0].rxChannelA.ctrlParams.agc.attack_ms = 500
+    --device_params[0].rxChannelA.ctrlParams.agc.decay_ms = 500
+    --device_params[0].rxChannelA.ctrlParams.agc.decay_delay_ms = 200
+    --device_params[0].rxChannelA.ctrlParams.agc.decay_threshold_dB = 5
+
+
+    device_params[0].rxChannelA.ctrlParams.agc.enable = ffi.C.sdrplay_api_AGC_DISABLE
+    
+
        
     --device_params[0].rxChannelA.tunerParams.gain.minGr = ffi.C.sdrplay_api_NORMAL_MIN_GR
     --device_params[0].rxChannelA.tunerParams.gain.minGr = ffi.C.sdrplay_api_NORMAL_MIN_GR

@@ -2,8 +2,21 @@ local radio = require('radio')
 
 
 
+local wwv10 = false
+
 -- WWV10 offset by 1000Hz so we pick up the carrier as a 1kHz tone
-local frequency = 10e6 - 1000
+-- my device seems to average about 0.3 Hz too high
+local frequency = 15e6 - 1000
+-- determined empirically based on signal conditions and my
+-- active loop using the 5v bias T in the RSPdx
+local gain = 15
+local gr = 55
+
+if wwv10 then
+    frequency = 10e6 - 1000
+    gain = 15
+    gr = 30
+end
 -- treat it as usb since we tuned below
 local sideband = 'usb'
 -- with a NO IF sdr there is a spike right at the center frequency
@@ -14,9 +27,6 @@ local tune_offset = -100e3
 -- otherwise we could tighten this up
 local bandwidth = 2e3
 
--- determined empirically based on signal conditions and my
--- active loop using the 5v bias T in the RSPdx
-local gain = 30
 
 -- sample rate is 2MHz, the lowest without on device decimation
 -- testing with SDRUno on windows always showed an increase in the frequency
@@ -31,7 +41,7 @@ local decimate = 10
 local source = radio.SDRplaySource(frequency + tune_offset, 
                                         rsp_dx_sample_rate, 
                                         {
-                                            gain_reduction = 0
+                                            gain_reduction = gr
                                         }
                                     )
 
